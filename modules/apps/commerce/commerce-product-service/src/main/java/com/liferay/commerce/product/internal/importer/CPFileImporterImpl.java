@@ -80,6 +80,7 @@ import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.TextFormatter;
 import com.liferay.portal.kernel.util.UnicodeProperties;
+import com.liferay.portal.kernel.util.UnicodePropertiesBuilder;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.model.impl.ThemeSettingImpl;
 
@@ -90,6 +91,7 @@ import java.io.InputStream;
 
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
@@ -405,6 +407,12 @@ public class CPFileImporterImpl implements CPFileImporter {
 			String dependenciesFilePath, ServiceContext serviceContext)
 		throws Exception {
 
+		int sitemapInclude = 1;
+
+		if (jsonObject.has("sitemap-include")) {
+			sitemapInclude = jsonObject.getInt("sitemap-include");
+		}
+
 		boolean hidden = jsonObject.getBoolean("hidden");
 		String icon = jsonObject.getString("icon");
 		String layoutType = jsonObject.getString(
@@ -426,10 +434,21 @@ public class CPFileImporterImpl implements CPFileImporter {
 
 		friendlyURL = CharPool.SLASH + friendlyURL;
 
+		HashMap<Locale, String> friendlyURLMap = HashMapBuilder.put(
+			LocaleUtil.getSiteDefault(), friendlyURL
+		).build();
+
+		Map<Locale, String> titleMap = Collections.singletonMap(
+			LocaleUtil.getSiteDefault(), name);
+
 		Layout layout = _layoutLocalService.addLayout(
 			serviceContext.getUserId(), serviceContext.getScopeGroupId(),
-			privateLayout, parentLayoutId, name, name, StringPool.BLANK,
-			layoutType, hidden, friendlyURL, serviceContext);
+			privateLayout, parentLayoutId, titleMap, titleMap, null, null, null,
+			layoutType,
+			UnicodePropertiesBuilder.put(
+				"sitemap-include", sitemapInclude
+			).buildString(),
+			hidden, false, friendlyURLMap, serviceContext);
 
 		if (Validator.isNotNull(icon)) {
 			String filePath = dependenciesFilePath + "layout_icons/" + icon;
