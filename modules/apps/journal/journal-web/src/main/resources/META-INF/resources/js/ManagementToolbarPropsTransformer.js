@@ -76,6 +76,7 @@ export default function propsTransformer({
 
 	const moveEntries = () => {
 		let entrySelectorNodes = document.querySelectorAll('.entry-selector');
+		const selectedEntries = {};
 
 		if (!entrySelectorNodes.length) {
 			entrySelectorNodes = document.querySelectorAll(
@@ -85,12 +86,20 @@ export default function propsTransformer({
 
 		entrySelectorNodes.forEach((node) => {
 			if (node.checked) {
-				moveArticlesAndFoldersURL = addParams(
-					`${node.name}=${node.value}`,
-					moveArticlesAndFoldersURL
-				);
+				const entryName = node.name;
+				if (selectedEntries[entryName] === undefined) {
+					selectedEntries[entryName] = '';
+				}
+				selectedEntries[entryName] += `${node.value},`;
 			}
 		});
+
+		for (const entryType in selectedEntries) {
+			moveArticlesAndFoldersURL = addParams(
+				`${entryType}=${selectedEntries[entryType]}`,
+				moveArticlesAndFoldersURL
+			);
+		}
 
 		navigate(moveArticlesAndFoldersURL);
 	};
