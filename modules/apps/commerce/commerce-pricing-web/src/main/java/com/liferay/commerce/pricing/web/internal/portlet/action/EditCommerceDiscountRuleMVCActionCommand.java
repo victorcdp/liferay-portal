@@ -90,6 +90,7 @@ public class EditCommerceDiscountRuleMVCActionCommand
 	private void _updateCommerceDiscountRule(ActionRequest actionRequest)
 		throws Exception {
 
+		String name = ParamUtil.getString(actionRequest, "name");
 		String type = ParamUtil.getString(actionRequest, "type");
 		String typeSettings = ParamUtil.getString(
 			actionRequest, "typeSettings");
@@ -99,7 +100,7 @@ public class EditCommerceDiscountRuleMVCActionCommand
 
 		if (commerceDiscountRuleId > 0) {
 			_commerceDiscountRuleService.updateCommerceDiscountRule(
-				commerceDiscountRuleId, type, typeSettings);
+				commerceDiscountRuleId, name, type, typeSettings);
 		}
 		else {
 			long commerceDiscountId = ParamUtil.getLong(
@@ -109,7 +110,7 @@ public class EditCommerceDiscountRuleMVCActionCommand
 				CommerceDiscountRule.class.getName(), actionRequest);
 
 			_commerceDiscountRuleService.addCommerceDiscountRule(
-				commerceDiscountId, type, typeSettings, serviceContext);
+				commerceDiscountId, name, type, typeSettings, serviceContext);
 		}
 	}
 

@@ -6,9 +6,16 @@
 --%>
 
 <%
-UnicodeProperties unicodeProperties = commerceDiscountRule.getSettingsProperties();
+CommerceDiscountRuleDisplayContext commerceDiscountRuleDisplayContext = (CommerceDiscountRuleDisplayContext)request.getAttribute(WebKeys.PORTLET_DISPLAY_CONTEXT);
+long commerceDiscountRuleId = commerceDiscountRuleDisplayContext.getCommerceDiscountRuleId();
 
-String typeSettings = unicodeProperties.getProperty(commerceDiscountRule.getType());
+String type = BeanParamUtil.getString(commerceDiscountRule, request, "type");
+String typeSettings = null;
+
+if (commerceDiscountRule != null) {
+	UnicodeProperties unicodeProperties = commerceDiscountRule.getSettingsProperties();
+	typeSettings = unicodeProperties.getProperty(type);
+}
 %>
 
 <div class="col-12">
@@ -45,7 +52,7 @@ String typeSettings = unicodeProperties.getProperty(commerceDiscountRule.getType
 			};
 
 			return CommerceDiscountRuleResource.updateDiscountRule(
-				'<%= commerceDiscountRule.getCommerceDiscountRuleId() %>',
+				'<%= commerceDiscountRuleId %>',
 				ruleData
 			)
 				.then((payload) => {
@@ -111,7 +118,7 @@ String typeSettings = unicodeProperties.getProperty(commerceDiscountRule.getType
 		<frontend-data-set:classic-display
 			contextParams='<%=
 				HashMapBuilder.<String, String>put(
-					"commerceDiscountRuleId", String.valueOf(commerceDiscountRule.getCommerceDiscountRuleId())
+					"commerceDiscountRuleId", String.valueOf(commerceDiscountRuleId)
 				).build()
 			%>'
 			dataProviderKey="<%= CommercePricingFDSNames.DISCOUNT_RULE_PRODUCT_DEFINITIONS %>"

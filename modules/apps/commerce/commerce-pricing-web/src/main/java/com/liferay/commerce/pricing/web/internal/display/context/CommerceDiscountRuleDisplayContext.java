@@ -60,6 +60,16 @@ public class CommerceDiscountRuleDisplayContext
 		return _commerceDiscountRule;
 	}
 
+	public long getCommerceDiscountId()
+		throws PortalException {
+
+		long commerceDiscountId = ParamUtil.getLong(
+			commercePricingRequestHelper.getRequest(),
+			"commerceDiscountId");
+
+		return commerceDiscountId;
+	}
+
 	public long getCommerceDiscountRuleId() throws PortalException {
 		CommerceDiscountRule commerceDiscountRule = getCommerceDiscountRule();
 

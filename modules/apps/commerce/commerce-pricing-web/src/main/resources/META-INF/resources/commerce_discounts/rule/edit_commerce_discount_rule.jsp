@@ -11,6 +11,8 @@
 CommerceDiscountRuleDisplayContext commerceDiscountRuleDisplayContext = (CommerceDiscountRuleDisplayContext)request.getAttribute(WebKeys.PORTLET_DISPLAY_CONTEXT);
 
 CommerceDiscountRule commerceDiscountRule = commerceDiscountRuleDisplayContext.getCommerceDiscountRule();
+long commerceDiscountId = commerceDiscountRuleDisplayContext.getCommerceDiscountId();
+long commerceDiscountRuleId = commerceDiscountRuleDisplayContext.getCommerceDiscountRuleId();
 
 String type = BeanParamUtil.getString(commerceDiscountRule, request, "type");
 %>
@@ -20,11 +22,12 @@ String type = BeanParamUtil.getString(commerceDiscountRule, request, "type");
 <liferay-frontend:side-panel-content
 	title='<%= LanguageUtil.get(request, "edit-rule") %>'
 >
-	<aui:form action="<%= editCommerceDiscountRuleActionURL %>" method="post" name="fm" onSubmit='<%= "event.preventDefault(); " + liferayPortletResponse.getNamespace() + "apiSubmit();" %>'>
+	<aui:form action="<%= editCommerceDiscountRuleActionURL %>" method="post" name="fm" >
 		<aui:input name="<%= Constants.CMD %>" type="hidden" value="<%= (commerceDiscountRule == null) ? Constants.ADD : Constants.UPDATE %>" />
 		<aui:input name="redirect" type="hidden" value="<%= currentURL %>" />
-		<aui:input name="commerceDiscountId" type="hidden" value="<%= commerceDiscountRule.getCommerceDiscountId() %>" />
-		<aui:input name="commerceDiscountRuleId" type="hidden" value="<%= commerceDiscountRule.getCommerceDiscountRuleId() %>" />
+		<aui:input name="commerceDiscountId" type="hidden" value="<%= commerceDiscountId %>" />
+		<aui:input name="commerceDiscountRuleId" type="hidden" value="<%= commerceDiscountRuleId %>" />
+		<aui:input name="type" type="hidden" value="<%= type %>" />
 
 		<aui:model-context bean="<%= commerceDiscountRule %>" model="<%= CommerceDiscountRule.class %>" />
 
@@ -43,7 +46,7 @@ String type = BeanParamUtil.getString(commerceDiscountRule, request, "type");
 							String key = commerceDiscountRuleType.getKey();
 						%>
 
-							<aui:option label="<%= commerceDiscountRuleType.getLabel(locale) %>" selected="<%= key.equals(commerceDiscountRule.getType()) %>" value="<%= key %>" />
+							<aui:option label="<%= commerceDiscountRuleType.getLabel(locale) %>" selected="<%= (commerceDiscountRule == null) ? false : key.equals(commerceDiscountRule.getType()) %>" value="<%= key %>" />
 
 						<%
 						}
@@ -63,7 +66,7 @@ String type = BeanParamUtil.getString(commerceDiscountRule, request, "type");
 			<c:if test="<%= commerceDiscountRuleTypeJSPContributor != null %>">
 
 				<%
-				commerceDiscountRuleTypeJSPContributor.render(commerceDiscountRule.getCommerceDiscountId(), commerceDiscountRule.getCommerceDiscountRuleId(), request, PipingServletResponseFactory.createPipingServletResponse(pageContext));
+				commerceDiscountRuleTypeJSPContributor.render(commerceDiscountId, commerceDiscountRuleId, request, PipingServletResponseFactory.createPipingServletResponse(pageContext));
 				%>
 
 			</c:if>
@@ -76,53 +79,3 @@ String type = BeanParamUtil.getString(commerceDiscountRule, request, "type");
 		</aui:button-row>
 	</aui:form>
 </liferay-frontend:side-panel-content>
-
-<aui:script require="commerce-frontend-js/utilities/notifications as NotificationUtils, commerce-frontend-js/utilities/slugify as slugify, commerce-frontend-js/utilities/eventsDefinitions as events, commerce-frontend-js/ServiceProvider/index as ServiceProvider">
-	var CommerceDiscountRuleResource = ServiceProvider.default.AdminPricingAPI(
-		'v2'
-	);
-
-	Liferay.provide(
-		window,
-		'<portlet:namespace />apiSubmit',
-		() => {
-			var form = document.getElementById('<portlet:namespace />fm');
-			var name = form.querySelector('#<portlet:namespace />name').value;
-
-			var typeSettings = form.querySelector(
-				'#<portlet:namespace />typeSettings'
-			).value;
-
-			var discountRuleData = {
-				name: name,
-				type: '<%= commerceDiscountRule.getType() %>',
-				typeSettings: typeSettings,
-			};
-
-			return CommerceDiscountRuleResource.updateDiscountRule(
-				'<%= commerceDiscountRule.getCommerceDiscountRuleId() %>',
-				discountRuleData
-			)
-				.then(() => {
-					NotificationUtils.showNotification(
-						'<liferay-ui:message key="your-request-completed-successfully" />'
-					);
-
-					window.parent.Liferay.fire(events.FDS_UPDATE_DISPLAY, {
-						id: '<%= CommercePricingFDSNames.DISCOUNT_RULES %>',
-					});
-
-					return;
-				})
-				.catch(() => {
-					Liferay.Util.openAlertModal({
-						message:
-							'<liferay-ui:message key="your-request-failed-to-complete" />',
-					});
-
-					return;
-				});
-		},
-		['liferay-portlet-url']
-	);
-</aui:script>
