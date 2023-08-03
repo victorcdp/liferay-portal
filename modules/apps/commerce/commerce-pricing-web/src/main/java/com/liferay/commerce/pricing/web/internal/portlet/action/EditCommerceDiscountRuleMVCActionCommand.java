@@ -5,6 +5,7 @@
 
 package com.liferay.commerce.pricing.web.internal.portlet.action;
 
+import com.liferay.commerce.discount.constants.CommerceDiscountRuleConstants;
 import com.liferay.commerce.discount.model.CommerceDiscountRule;
 import com.liferay.commerce.discount.service.CommerceDiscountRuleService;
 import com.liferay.commerce.pricing.constants.CommercePricingPortletKeys;
@@ -18,6 +19,8 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+
+import java.math.BigDecimal;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -48,6 +51,11 @@ public class EditCommerceDiscountRuleMVCActionCommand
 		try {
 			if (cmd.equals(Constants.ADD) || cmd.equals(Constants.UPDATE)) {
 				_updateCommerceDiscountRule(actionRequest);
+
+				String redirect = ParamUtil.getString(
+					actionRequest, "redirect");
+
+				sendRedirect(actionRequest, actionResponse, redirect);
 			}
 			else {
 				_deleteCommerceDiscountCPDefinition(actionRequest);
@@ -90,16 +98,30 @@ public class EditCommerceDiscountRuleMVCActionCommand
 	private void _updateCommerceDiscountRule(ActionRequest actionRequest)
 		throws Exception {
 
+		String name = ParamUtil.getString(actionRequest, "name");
 		String type = ParamUtil.getString(actionRequest, "type");
+
 		String typeSettings = ParamUtil.getString(
 			actionRequest, "typeSettings");
+
+		if (ParamUtil.getString(
+				actionRequest, "type"
+			).equals(
+				CommerceDiscountRuleConstants.TYPE_CART_TOTAL
+			)) {
+
+			BigDecimal typeSettingsValue = (BigDecimal)ParamUtil.getNumber(
+				actionRequest, "typeSettings", BigDecimal.ZERO);
+
+			typeSettings = String.valueOf(typeSettingsValue);
+		}
 
 		long commerceDiscountRuleId = ParamUtil.getLong(
 			actionRequest, "commerceDiscountRuleId");
 
 		if (commerceDiscountRuleId > 0) {
 			_commerceDiscountRuleService.updateCommerceDiscountRule(
-				commerceDiscountRuleId, type, typeSettings);
+				commerceDiscountRuleId, name, type, typeSettings);
 		}
 		else {
 			long commerceDiscountId = ParamUtil.getLong(
@@ -109,7 +131,7 @@ public class EditCommerceDiscountRuleMVCActionCommand
 				CommerceDiscountRule.class.getName(), actionRequest);
 
 			_commerceDiscountRuleService.addCommerceDiscountRule(
-				commerceDiscountId, type, typeSettings, serviceContext);
+				commerceDiscountId, name, type, typeSettings, serviceContext);
 		}
 	}
 
