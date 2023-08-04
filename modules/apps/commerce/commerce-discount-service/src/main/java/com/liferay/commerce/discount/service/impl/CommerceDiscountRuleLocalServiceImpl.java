@@ -5,6 +5,7 @@
 
 package com.liferay.commerce.discount.service.impl;
 
+import com.liferay.commerce.discount.constants.CommerceDiscountRuleConstants;
 import com.liferay.commerce.discount.exception.CommerceDiscountRuleTypeException;
 import com.liferay.commerce.discount.model.CommerceDiscount;
 import com.liferay.commerce.discount.model.CommerceDiscountRule;
@@ -21,8 +22,11 @@ import com.liferay.portal.kernel.search.IndexerRegistryUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.systemevent.SystemEvent;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.UnicodeProperties;
+
+import java.math.BigDecimal;
 
 import java.util.List;
 
@@ -76,6 +80,13 @@ public class CommerceDiscountRuleLocalServiceImpl
 
 		UnicodeProperties settingsUnicodeProperties =
 			commerceDiscountRule.getSettingsProperties();
+
+		if (type.equals(CommerceDiscountRuleConstants.TYPE_CART_TOTAL)) {
+			BigDecimal typeSettingsValue = (BigDecimal)GetterUtil.getNumber(
+				typeSettings, BigDecimal.ZERO);
+
+			typeSettings = String.valueOf(typeSettingsValue);
+		}
 
 		settingsUnicodeProperties.put(type, typeSettings);
 
@@ -188,6 +199,13 @@ public class CommerceDiscountRuleLocalServiceImpl
 		UnicodeProperties unicodeProperties =
 			commerceDiscountRule.getSettingsProperties();
 
+		if (type.equals(CommerceDiscountRuleConstants.TYPE_CART_TOTAL)) {
+			BigDecimal typeSettingsValue = (BigDecimal)GetterUtil.getNumber(
+				typeSettings, BigDecimal.ZERO);
+
+			typeSettings = String.valueOf(typeSettingsValue);
+		}
+
 		unicodeProperties.put(type, typeSettings);
 
 		commerceDiscountRule.setSettingsProperties(unicodeProperties);
@@ -221,6 +239,13 @@ public class CommerceDiscountRuleLocalServiceImpl
 
 		UnicodeProperties unicodeProperties =
 			commerceDiscountRule.getSettingsProperties();
+
+		if (type.equals(CommerceDiscountRuleConstants.TYPE_CART_TOTAL)) {
+			BigDecimal typeSettingsValue = (BigDecimal)GetterUtil.getNumber(
+				typeSettings, BigDecimal.ZERO);
+
+			typeSettings = String.valueOf(typeSettingsValue);
+		}
 
 		unicodeProperties.put(type, typeSettings);
 
