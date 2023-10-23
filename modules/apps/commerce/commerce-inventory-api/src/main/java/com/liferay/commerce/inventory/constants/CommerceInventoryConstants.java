@@ -15,6 +15,12 @@ public class CommerceInventoryConstants {
 
 	public static final String AUDIT_TYPE_CONSUME_QUANTITY = "consume-quantity";
 
+	public static final String AUDIT_TYPE_DELETE_QUANTITY_CANCELLED_ORDER =
+		"delete-quantity-cancelled-order";
+
+	public static final String AUDIT_TYPE_DELETE_QUANTITY_DELETED_ORDER =
+		"delete-quantity-deleted-order";
+
 	public static final String AUDIT_TYPE_INCREASE_QUANTITY =
 		"increase-quantity";
 
