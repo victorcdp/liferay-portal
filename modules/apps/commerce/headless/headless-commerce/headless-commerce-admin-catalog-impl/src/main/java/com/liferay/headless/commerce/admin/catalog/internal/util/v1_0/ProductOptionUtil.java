@@ -14,6 +14,7 @@ import com.liferay.headless.commerce.admin.catalog.internal.dto.v1_0.util.Custom
 import com.liferay.headless.commerce.core.util.LanguageUtils;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 
 import java.util.Map;
@@ -65,7 +66,9 @@ public class ProductOptionUtil {
 					GetterUtil.get(
 						productOption.getFieldType(),
 						cpOption.getCommerceOptionTypeKey()),
+					GetterUtil.get(productOption.getInfoItemServiceKey(), ""),
 					GetterUtil.get(productOption.getPriority(), 0D),
+					GetterUtil.get(productOption.getDefinedExternally(), false),
 					GetterUtil.get(
 						productOption.getFacetable(), cpOption.isFacetable()),
 					GetterUtil.get(
@@ -73,7 +76,10 @@ public class ProductOptionUtil {
 					GetterUtil.get(
 						productOption.getSkuContributor(),
 						cpOption.isSkuContributor()),
-					true, serviceContext);
+					GetterUtil.get(productOption.getPriceType(), ""),
+					GetterUtil.get(productOption.getTypeSettings(), ""),
+					ArrayUtil.isEmpty(productOption.getProductOptionValues()),
+					serviceContext);
 		}
 		else {
 			cpDefinitionOptionRel =
