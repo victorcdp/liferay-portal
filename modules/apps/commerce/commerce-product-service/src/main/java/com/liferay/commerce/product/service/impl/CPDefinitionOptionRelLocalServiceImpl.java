@@ -209,6 +209,29 @@ public class CPDefinitionOptionRelLocalServiceImpl
 
 	@Override
 	public CPDefinitionOptionRel addCPDefinitionOptionRel(
+			long cpDefinitionId, long cpOptionId, Map<Locale, String> nameMap,
+			Map<Locale, String> descriptionMap, String commerceOptionTypeKey,
+			String infoItemServiceKey, double priority,
+			boolean definedExternally, boolean facetable, boolean required,
+			boolean skuContributor, String priceType, String typeSettings,
+			boolean importOptionValue, ServiceContext serviceContext)
+		throws PortalException {
+
+		CPDefinitionOptionRel cpDefinitionOptionRel =
+			cpDefinitionOptionRelLocalService.addCPDefinitionOptionRel(
+				cpDefinitionId, cpOptionId, nameMap, descriptionMap,
+				commerceOptionTypeKey, priority, facetable, required,
+				skuContributor, importOptionValue, priceType, serviceContext);
+
+		cpDefinitionOptionRel.setInfoItemServiceKey(infoItemServiceKey);
+		cpDefinitionOptionRel.setDefinedExternally(definedExternally);
+		cpDefinitionOptionRel.setTypeSettings(typeSettings);
+
+		return cpDefinitionOptionRel;
+	}
+
+	@Override
+	public CPDefinitionOptionRel addCPDefinitionOptionRel(
 			long cpDefinitionId, long cpOptionId, ServiceContext serviceContext)
 		throws PortalException {
 
