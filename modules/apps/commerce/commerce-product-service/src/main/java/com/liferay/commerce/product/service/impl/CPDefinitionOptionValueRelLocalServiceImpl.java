@@ -114,6 +114,25 @@ public class CPDefinitionOptionValueRelLocalServiceImpl
 				serviceContext);
 	}
 
+	@Override
+	public CPDefinitionOptionValueRel addCPDefinitionOptionValueRel(
+			long cpDefinitionOptionRelId, long cpInstanceId, String key,
+			Map<Locale, String> nameMap, BigDecimal deltaPrice, double priority,
+			BigDecimal quantity, ServiceContext serviceContext)
+		throws PortalException {
+
+		CPDefinitionOptionValueRel cpDefinitionOptionValueRel =
+			addCPDefinitionOptionValueRel(
+				cpDefinitionOptionRelId, key, nameMap, priority,
+				serviceContext);
+
+		cpDefinitionOptionValueRel.setPrice(deltaPrice);
+		cpDefinitionOptionValueRel.setQuantity(quantity);
+
+		return _updateCPDefinitionOptionValueRelCPInstance(
+			cpDefinitionOptionValueRel, cpInstanceId);
+	}
+
 	@Indexable(type = IndexableType.REINDEX)
 	@Override
 	public CPDefinitionOptionValueRel addCPDefinitionOptionValueRel(

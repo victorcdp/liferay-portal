@@ -49,6 +49,19 @@ public class CPDefinitionOptionValueRelServiceImpl
 
 	@Override
 	public CPDefinitionOptionValueRel addCPDefinitionOptionValueRel(
+			long cpDefinitionOptionRelId, long cpInstanceId, String key,
+			Map<Locale, String> nameMap, BigDecimal deltaPrice, double priority,
+			BigDecimal quantity, ServiceContext serviceContext)
+		throws PortalException {
+
+		return cpDefinitionOptionValueRelLocalService.
+			addCPDefinitionOptionValueRel(
+				cpDefinitionOptionRelId, cpInstanceId, key, nameMap, deltaPrice,
+				priority, quantity, serviceContext);
+	}
+
+	@Override
+	public CPDefinitionOptionValueRel addCPDefinitionOptionValueRel(
 			long cpDefinitionOptionRelId, String key,
 			Map<Locale, String> nameMap, double priority,
 			ServiceContext serviceContext)
