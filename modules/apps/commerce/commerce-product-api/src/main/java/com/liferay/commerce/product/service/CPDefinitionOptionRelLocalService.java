@@ -108,6 +108,15 @@ public interface CPDefinitionOptionRelLocalService
 		throws PortalException;
 
 	public CPDefinitionOptionRel addCPDefinitionOptionRel(
+			long cpDefinitionId, long cpOptionId, Map<Locale, String> nameMap,
+			Map<Locale, String> descriptionMap, String commerceOptionTypeKey,
+			String infoItemServiceKey, double priority,
+			boolean definedExternally, boolean facetable, boolean required,
+			boolean skuContributor, String priceType, String typeSettings,
+			boolean importOptionValue, ServiceContext serviceContext)
+		throws PortalException;
+
+	public CPDefinitionOptionRel addCPDefinitionOptionRel(
 			long cpDefinitionId, long cpOptionId, ServiceContext serviceContext)
 		throws PortalException;
 

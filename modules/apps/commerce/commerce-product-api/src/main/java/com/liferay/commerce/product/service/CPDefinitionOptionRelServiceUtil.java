@@ -64,6 +64,24 @@ public class CPDefinitionOptionRelServiceUtil {
 
 	public static CPDefinitionOptionRel addCPDefinitionOptionRel(
 			long cpDefinitionId, long cpOptionId,
+			Map<java.util.Locale, String> nameMap,
+			Map<java.util.Locale, String> descriptionMap,
+			String commerceOptionTypeKey, String infoItemServiceKey,
+			double priority, boolean definedExternally, boolean facetable,
+			boolean required, boolean skuContributor, String priceType,
+			String typeSettings, boolean importOptionValue,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws PortalException {
+
+		return getService().addCPDefinitionOptionRel(
+			cpDefinitionId, cpOptionId, nameMap, descriptionMap,
+			commerceOptionTypeKey, infoItemServiceKey, priority,
+			definedExternally, facetable, required, skuContributor, priceType,
+			typeSettings, importOptionValue, serviceContext);
+	}
+
+	public static CPDefinitionOptionRel addCPDefinitionOptionRel(
+			long cpDefinitionId, long cpOptionId,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws PortalException {
 
