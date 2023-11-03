@@ -65,6 +65,19 @@ public class CPDefinitionOptionValueRelLocalServiceUtil {
 	}
 
 	public static CPDefinitionOptionValueRel addCPDefinitionOptionValueRel(
+			long cpDefinitionOptionRelId, long cpInstanceId, String key,
+			Map<java.util.Locale, String> nameMap,
+			java.math.BigDecimal deltaPrice, double priority,
+			java.math.BigDecimal quantity,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws PortalException {
+
+		return getService().addCPDefinitionOptionValueRel(
+			cpDefinitionOptionRelId, cpInstanceId, key, nameMap, deltaPrice,
+			priority, quantity, serviceContext);
+	}
+
+	public static CPDefinitionOptionValueRel addCPDefinitionOptionValueRel(
 			long cpDefinitionOptionRelId, String key,
 			Map<java.util.Locale, String> nameMap, double priority,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)

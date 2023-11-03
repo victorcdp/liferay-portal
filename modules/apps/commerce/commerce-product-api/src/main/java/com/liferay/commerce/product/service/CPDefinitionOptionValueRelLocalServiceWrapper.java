@@ -66,6 +66,21 @@ public class CPDefinitionOptionValueRelLocalServiceWrapper
 
 	@Override
 	public CPDefinitionOptionValueRel addCPDefinitionOptionValueRel(
+			long cpDefinitionOptionRelId, long cpInstanceId, String key,
+			java.util.Map<java.util.Locale, String> nameMap,
+			java.math.BigDecimal deltaPrice, double priority,
+			java.math.BigDecimal quantity,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _cpDefinitionOptionValueRelLocalService.
+			addCPDefinitionOptionValueRel(
+				cpDefinitionOptionRelId, cpInstanceId, key, nameMap, deltaPrice,
+				priority, quantity, serviceContext);
+	}
+
+	@Override
+	public CPDefinitionOptionValueRel addCPDefinitionOptionValueRel(
 			long cpDefinitionOptionRelId, String key,
 			java.util.Map<java.util.Locale, String> nameMap, double priority,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
