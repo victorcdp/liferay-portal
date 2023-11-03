@@ -117,6 +117,92 @@ public class CPDefinitionOptionValueRelLocalServiceImpl
 	@Indexable(type = IndexableType.REINDEX)
 	@Override
 	public CPDefinitionOptionValueRel addCPDefinitionOptionValueRel(
+			long cpDefinitionOptionRelId, long cpInstanceId, String key,
+			Map<Locale, String> nameMap, BigDecimal deltaPrice, double priority,
+			BigDecimal quantity, ServiceContext serviceContext)
+		throws PortalException {
+
+		// Commerce product definition option value rel
+
+		User user = _userLocalService.getUser(serviceContext.getUserId());
+
+		key = _friendlyURLNormalizer.normalize(key);
+
+		_validate(
+			0, cpDefinitionOptionRelId, cpInstanceId, key, StringPool.BLANK);
+
+		long cpDefinitionOptionValueRelId = counterLocalService.increment();
+
+		CPDefinitionOptionValueRel cpDefinitionOptionValueRel =
+			cpDefinitionOptionValueRelPersistence.create(
+				cpDefinitionOptionValueRelId);
+
+		CPDefinitionOptionRel cpDefinitionOptionRel =
+			_cpDefinitionOptionRelLocalService.getCPDefinitionOptionRel(
+				cpDefinitionOptionRelId);
+
+		if (CPDefinitionLocalServiceCircularDependencyUtil.isVersionable(
+				cpDefinitionOptionRel.getCPDefinitionId(),
+				serviceContext.getRequest())) {
+
+			CPDefinition newCPDefinition =
+				CPDefinitionLocalServiceCircularDependencyUtil.copyCPDefinition(
+					cpDefinitionOptionRel.getCPDefinitionId());
+
+			cpDefinitionOptionRel = _cpDefinitionOptionRelPersistence.findByC_C(
+				newCPDefinition.getCPDefinitionId(),
+				cpDefinitionOptionRel.getCPOptionId());
+
+			cpDefinitionOptionRelId =
+				cpDefinitionOptionRel.getCPDefinitionOptionRelId();
+		}
+
+		cpDefinitionOptionValueRel =
+			_updateCPDefinitionOptionValueRelCPInstance(
+				cpDefinitionOptionValueRel, cpInstanceId);
+
+		cpDefinitionOptionValueRel.setGroupId(
+			cpDefinitionOptionRel.getGroupId());
+		cpDefinitionOptionValueRel.setCompanyId(user.getCompanyId());
+		cpDefinitionOptionValueRel.setUserId(user.getUserId());
+		cpDefinitionOptionValueRel.setUserName(user.getFullName());
+		cpDefinitionOptionValueRel.setCPDefinitionOptionRelId(
+			cpDefinitionOptionRelId);
+		cpDefinitionOptionValueRel.setExpandoBridgeAttributes(serviceContext);
+		cpDefinitionOptionValueRel.setKey(key);
+		cpDefinitionOptionValueRel.setNameMap(nameMap);
+
+		if (cpDefinitionOptionRel.isPriceTypeStatic()) {
+			cpDefinitionOptionValueRel.setPrice(
+				BigDecimalUtil.get(deltaPrice, BigDecimal.ZERO));
+		}
+
+		cpDefinitionOptionValueRel.setPriority(priority);
+		cpDefinitionOptionValueRel.setQuantity(
+			BigDecimalUtil.get(quantity, BigDecimal.ONE));
+
+		_validateLinkedCPDefinitionOptionValueRel(cpDefinitionOptionValueRel);
+
+		CPInstance cpInstance = _cpInstanceLocalService.getCProductInstance(
+			cpDefinitionOptionValueRel.getCProductId(),
+			cpDefinitionOptionValueRel.getCPInstanceUuid());
+
+		_validateLinkableCPInstance(cpInstance);
+
+		cpDefinitionOptionValueRel =
+			cpDefinitionOptionValueRelPersistence.update(
+				cpDefinitionOptionValueRel);
+
+		// Commerce product definition
+
+		_reindexCPDefinition(cpDefinitionOptionRel);
+
+		return cpDefinitionOptionValueRel;
+	}
+
+	@Indexable(type = IndexableType.REINDEX)
+	@Override
+	public CPDefinitionOptionValueRel addCPDefinitionOptionValueRel(
 			long cpDefinitionOptionRelId, String key,
 			Map<Locale, String> nameMap, double priority,
 			ServiceContext serviceContext)
@@ -1010,6 +1096,18 @@ public class CPDefinitionOptionValueRelLocalServiceImpl
 		}
 	}
 
+	private void _validateLinkableCPInstance(CPInstance cpInstance)
+		throws PortalException {
+
+		if (_cpDefinitionOptionRelLocalService.
+				hasCPDefinitionRequiredCPDefinitionOptionRels(
+					cpInstance.getCPDefinitionId()) ||
+			(cpInstance.getCPSubscriptionInfo() != null)) {
+
+			throw new CPDefinitionOptionValueRelCPInstanceException();
+		}
+	}
+
 	private void _validateLinkedCPDefinitionOptionValueRel(
 			CPDefinitionOptionValueRel cpDefinitionOptionValueRel)
 		throws PortalException {
@@ -1099,13 +1197,7 @@ public class CPDefinitionOptionValueRelLocalServiceImpl
 			return;
 		}
 
-		if (_cpDefinitionOptionRelLocalService.
-				hasCPDefinitionRequiredCPDefinitionOptionRels(
-					cpInstance.getCPDefinitionId()) ||
-			(cpInstance.getCPSubscriptionInfo() != null)) {
-
-			throw new CPDefinitionOptionValueRelCPInstanceException();
-		}
+		_validateLinkableCPInstance(cpInstance);
 
 		if (BigDecimalUtil.lte(
 				cpDefinitionOptionValueRel.getQuantity(), BigDecimal.ZERO)) {
