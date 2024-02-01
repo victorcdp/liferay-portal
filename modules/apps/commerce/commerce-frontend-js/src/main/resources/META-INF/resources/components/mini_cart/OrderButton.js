@@ -32,6 +32,7 @@ function OrderButton({disabled = false}) {
 		<div className="mini-cart-submit">
 			<ClayButton
 				block
+				data-qa-id="mini-cart-submit"
 				disabled={disabled}
 				onClick={() => {
 					liferayNavigate(canSubmit ? checkoutURL : orderDetailURL);

@@ -153,6 +153,7 @@ function AddToCartButton({
 					notAllowed ||
 					(cartAtomState.updating && !isTriggeringCartUpdate),
 			})}
+			data-qa-id="addToCart"
 			disabled={buttonDisabled}
 			displayType="primary"
 			monospaced={settings.iconOnly && settings.inline}
