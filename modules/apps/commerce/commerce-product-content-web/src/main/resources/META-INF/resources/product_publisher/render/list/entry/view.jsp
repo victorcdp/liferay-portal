@@ -17,7 +17,7 @@ CPCatalogEntry cpCatalogEntry = cpContentHelper.getCPCatalogEntry(request);
 boolean hasMultipleCPSkus = cpContentHelper.hasMultipleCPSkus(cpCatalogEntry);
 %>
 
-<div class="cp-renderer">
+<div class="cp-renderer" data-qa-id="cpRenderer_<%= cpCatalogEntry.getCProductId() %>">
 	<liferay-util:dynamic-include key="com.liferay.commerce.product.content.web#/add_to_cart#pre" />
 
 	<div class="card d-flex flex-column product-card">

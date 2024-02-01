@@ -67,6 +67,7 @@ function Opener() {
 
 	return (
 		<button
+			data-qa-id="miniCartOpener"
 			className={classnames({
 				'has-badge': numberOfItems > 0,
 				'mini-cart-opener': true,
