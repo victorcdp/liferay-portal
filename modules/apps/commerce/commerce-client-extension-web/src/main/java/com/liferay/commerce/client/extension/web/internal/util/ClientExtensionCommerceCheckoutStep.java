@@ -10,6 +10,8 @@ import com.liferay.commerce.client.extension.web.internal.type.deployer.Registra
 import com.liferay.commerce.constants.CommerceWebKeys;
 import com.liferay.commerce.context.CommerceContext;
 import com.liferay.commerce.model.CommerceOrder;
+import com.liferay.commerce.payment.model.CommercePaymentMethodGroupRel;
+import com.liferay.commerce.payment.service.CommercePaymentMethodGroupRelLocalService;
 import com.liferay.commerce.util.CommerceCheckoutStep;
 import com.liferay.frontend.taglib.servlet.taglib.util.JSPRenderer;
 import com.liferay.portal.catapult.PortalCatapult;
@@ -46,12 +48,16 @@ public class ClientExtensionCommerceCheckoutStep
 		CommerceCheckoutStepCET commerceCheckoutStepCET,
 		JSONFactory jsonFactory, JSPRenderer jspRenderer,
 		PortalCatapult portalCatapult, ServletContext servletContext,
+		CommercePaymentMethodGroupRelLocalService
+			commercePaymentMethodGroupRelLocalService,
 		UserService userService) {
 
 		_jsonFactory = jsonFactory;
 		_jspRenderer = jspRenderer;
 		_portalCatapult = portalCatapult;
 		_servletContext = servletContext;
+		_commercePaymentMethodGroupRelLocalService =
+			commercePaymentMethodGroupRelLocalService;
 		_userService = userService;
 
 		_active = commerceCheckoutStepCET.getActive();
@@ -184,6 +190,20 @@ public class ClientExtensionCommerceCheckoutStep
 		httpServletRequest.setAttribute(
 			CommerceClientExtensionWebKeys.RENDER_URL, _baseURL + "/index.js");
 
+		CommerceContext commerceContext =
+			(CommerceContext)httpServletRequest.getAttribute(
+				CommerceWebKeys.COMMERCE_CONTEXT);
+
+		CommerceOrder commerceOrder = commerceContext.getCommerceOrder();
+
+		CommercePaymentMethodGroupRel commercePaymentMethodGroupRel =
+			_commercePaymentMethodGroupRelLocalService.
+				fetchCommercePaymentMethodGroupRel(
+					commerceOrder.getGroupId(),
+					commerceOrder.getCommercePaymentMethodKey());
+
+		System.out.println(commercePaymentMethodGroupRel);
+
 		_jspRenderer.renderJSP(
 			_servletContext, httpServletRequest, httpServletResponse,
 			"/checkout_step/client_extension.jsp");
@@ -203,6 +223,8 @@ public class ClientExtensionCommerceCheckoutStep
 	private final boolean _active;
 	private final String _baseURL;
 	private final int _commerceCheckoutStepOrder;
+	private final CommercePaymentMethodGroupRelLocalService
+		_commercePaymentMethodGroupRelLocalService;
 	private final Dictionary<String, Object> _dictionary;
 	private final JSONFactory _jsonFactory;
 	private final JSPRenderer _jspRenderer;
