@@ -89,6 +89,7 @@ import java.text.DateFormat;
 import java.text.Format;
 import java.text.ParseException;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -215,27 +216,29 @@ public class OrganizationResourceImpl extends BaseOrganizationResourceImpl {
 			Sort[] sorts)
 		throws Exception {
 
-		return SearchUtil.search(
-			Collections.emptyMap(),
-			booleanQuery -> {
-				BooleanFilter booleanFilter =
-					booleanQuery.getPreBooleanFilter();
+		List<AccountEntryOrganizationRel> accountEntryOrganizationRels =
+			_accountEntryOrganizationRelLocalService.
+				getAccountEntryOrganizationRels(
+					accountId, pagination.getStartPosition(),
+					pagination.getEndPosition());
 
-				booleanFilter.add(
-					new TermFilter(
-						"accountEntryIds", String.valueOf(accountId)),
-					BooleanClauseOccur.MUST);
-			},
-			filter,
-			com.liferay.portal.kernel.model.Organization.class.getName(),
-			search, pagination,
-			queryConfig -> queryConfig.setSelectedFieldNames(
-				Field.ENTRY_CLASS_PK),
-			searchContext -> searchContext.setCompanyId(
-				contextCompany.getCompanyId()),
-			sorts,
-			document -> _toOrganization(
-				GetterUtil.getString(document.get(Field.ENTRY_CLASS_PK))));
+		List<Organization> filteredList = new ArrayList<>();
+
+		for (AccountEntryOrganizationRel accountEntryOrganizationRel :
+				accountEntryOrganizationRels) {
+
+			if (_organizationLocalService.hasUserOrganization(
+					contextUser.getUserId(),
+					accountEntryOrganizationRel.getOrganizationId())) {
+
+				filteredList.add(
+					_toOrganization(
+						String.valueOf(
+							accountEntryOrganizationRel.getOrganizationId())));
+			}
+		}
+
+		return Page.of(filteredList);
 	}
 
 	@Override
