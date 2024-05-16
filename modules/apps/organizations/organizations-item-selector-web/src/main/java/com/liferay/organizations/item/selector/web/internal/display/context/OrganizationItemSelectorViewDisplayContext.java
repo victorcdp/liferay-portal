@@ -14,10 +14,16 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.model.OrganizationConstants;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.OrganizationLocalService;
+import com.liferay.portal.kernel.service.permission.OrganizationPermissionUtil;
 import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portlet.usersadmin.util.UsersAdminUtil;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.portlet.PortletURL;
 import javax.portlet.RenderRequest;
@@ -75,12 +81,14 @@ public class OrganizationItemSelectorViewDisplayContext {
 			(OrganizationSearchTerms)_searchContainer.getSearchTerms();
 
 		_searchContainer.setResultsAndTotal(
-			() -> _organizationLocalService.search(
-				CompanyThreadLocal.getCompanyId(),
-				OrganizationConstants.ANY_PARENT_ORGANIZATION_ID,
-				organizationSearchTerms.getKeywords(), null, null, null, null,
-				_searchContainer.getStart(), _searchContainer.getEnd(),
-				_searchContainer.getOrderByComparator()),
+			() -> _filterOrganizations(
+				_organizationLocalService.search(
+					CompanyThreadLocal.getCompanyId(),
+					OrganizationConstants.ANY_PARENT_ORGANIZATION_ID,
+					organizationSearchTerms.getKeywords(), null, null, null,
+					null, _searchContainer.getStart(),
+					_searchContainer.getEnd(),
+					_searchContainer.getOrderByComparator())),
 			_organizationLocalService.searchCount(
 				CompanyThreadLocal.getCompanyId(),
 				OrganizationConstants.ANY_PARENT_ORGANIZATION_ID,
@@ -93,6 +101,24 @@ public class OrganizationItemSelectorViewDisplayContext {
 					getSelectedOrganizationIds()));
 
 		return _searchContainer;
+	}
+
+	private List<Organization> _filterOrganizations(
+			List<Organization> organizationList)
+		throws PortalException {
+
+		List<Organization> filteredList = new ArrayList<>();
+
+		for (Organization organization : organizationList) {
+			if (OrganizationPermissionUtil.contains(
+					PermissionThreadLocal.getPermissionChecker(),
+					organization.getOrganizationId(), ActionKeys.VIEW)) {
+
+				filteredList.add(organization);
+			}
+		}
+
+		return filteredList;
 	}
 
 	private final OrganizationItemSelectorCriterion
