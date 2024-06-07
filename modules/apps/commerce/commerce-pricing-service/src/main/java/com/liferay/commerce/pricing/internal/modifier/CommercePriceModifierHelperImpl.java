@@ -9,6 +9,7 @@ import com.liferay.commerce.currency.model.CommerceCurrency;
 import com.liferay.commerce.currency.model.CommerceMoney;
 import com.liferay.commerce.price.list.model.CommercePriceList;
 import com.liferay.commerce.price.list.service.CommercePriceListLocalService;
+import com.liferay.commerce.pricing.constants.CommercePriceModifierConstants;
 import com.liferay.commerce.pricing.model.CommercePriceModifier;
 import com.liferay.commerce.pricing.modifier.CommercePriceModifierHelper;
 import com.liferay.commerce.pricing.service.CommercePriceModifierLocalService;
@@ -20,7 +21,9 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 import java.util.List;
+import java.util.Objects;
 
+import com.liferay.portal.kernel.util.ListUtil;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -43,6 +46,7 @@ public class CommercePriceModifierHelperImpl
 					commercePriceListId, cpDefinitionId);
 
 		BigDecimal lowestPrice = null;
+		BigDecimal lowestReplacePrice = null;
 
 		CommercePriceList commercePriceList =
 			_commercePriceListLocalService.getCommercePriceList(
@@ -85,6 +89,13 @@ public class CommercePriceModifierHelperImpl
 					(actualPrice.compareTo(lowestPrice) < 0)) {
 
 					lowestPrice = actualPrice;
+
+					if ((lowestReplacePrice == null) &&
+						Objects.equals(
+							commercePriceModifierType.getKey(),
+							CommercePriceModifierConstants.MODIFIER_TYPE_REPLACE)){
+						lowestReplacePrice = actualPrice;
+					}
 				}
 			}
 		}
@@ -102,6 +113,10 @@ public class CommercePriceModifierHelperImpl
 					originalCommerceCurrency.getRoundingMode()));
 
 			lowestPrice = lowestPrice.multiply(priceListCurrency.getRate());
+		}
+
+		if (lowestReplacePrice != null){
+			lowestPrice = lowestReplacePrice;
 		}
 
 		RoundingMode roundingMode = RoundingMode.valueOf(
