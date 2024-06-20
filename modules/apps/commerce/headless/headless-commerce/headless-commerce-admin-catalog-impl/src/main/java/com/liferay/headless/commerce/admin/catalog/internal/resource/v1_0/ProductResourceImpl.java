@@ -72,6 +72,7 @@ import com.liferay.headless.commerce.admin.catalog.dto.v1_0.ProductTaxConfigurat
 import com.liferay.headless.commerce.admin.catalog.dto.v1_0.ProductVirtualSettings;
 import com.liferay.headless.commerce.admin.catalog.dto.v1_0.RelatedProduct;
 import com.liferay.headless.commerce.admin.catalog.dto.v1_0.Sku;
+import com.liferay.headless.commerce.admin.catalog.dto.v1_0.SkuUnitOfMeasure;
 import com.liferay.headless.commerce.admin.catalog.internal.dto.v1_0.util.CustomFieldsUtil;
 import com.liferay.headless.commerce.admin.catalog.internal.odata.entity.v1_0.ProductEntityModel;
 import com.liferay.headless.commerce.admin.catalog.internal.util.v1_0.AttachmentUtil;
@@ -1088,6 +1089,22 @@ public class ProductResourceImpl extends BaseProductResourceImpl {
 					(BigDecimal)GetterUtil.get(
 						sku.getPromoPrice(), cpInstance.getPromoPrice()),
 					StringPool.BLANK, serviceContext);
+
+				for (SkuUnitOfMeasure skuSkuUnitOfMeasure :
+						sku.getSkuUnitOfMeasures()) {
+
+					SkuUtil.updateCommercePriceEntries(
+						_commercePriceEntryLocalService,
+						_commercePriceListLocalService, _configurationProvider,
+						cpInstance,
+						(BigDecimal)GetterUtil.get(
+							skuSkuUnitOfMeasure.getBasePrice(),
+							cpInstance.getPrice()),
+						(BigDecimal)GetterUtil.get(
+							skuSkuUnitOfMeasure.getPromoPrice(),
+							cpInstance.getPromoPrice()),
+						skuSkuUnitOfMeasure.getKey(), serviceContext);
+				}
 			}
 		}
 
