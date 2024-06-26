@@ -86,7 +86,16 @@ public class PriceTag extends IncludeTag {
 					_productHelper.getProductSettingsModel(
 						_cpCatalogEntry.getCPDefinitionId());
 
+				CPInstanceUnitOfMeasure cpInstanceUnitOfMeasure =
+					_cpInstanceUnitOfMeasureLocalService.
+						fetchPrimaryCPInstanceUnitOfMeasure(cpInstanceId);
+
 				_quantity = productSettingsModel.getMinQuantity();
+
+				if (cpInstanceUnitOfMeasure != null) {
+					_quantity =
+						cpInstanceUnitOfMeasure.getIncrementalOrderQuantity();
+				}
 			}
 
 			_displayDiscountLevels = _isDisplayDiscountLevels();
