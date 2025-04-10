@@ -36,13 +36,21 @@ import com.liferay.headless.commerce.admin.catalog.client.pagination.Pagination;
 import com.liferay.headless.commerce.admin.catalog.client.problem.Problem;
 import com.liferay.headless.commerce.admin.catalog.client.resource.v1_0.ProductResource;
 import com.liferay.headless.commerce.core.util.LanguageUtils;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
+import com.liferay.portal.kernel.json.JSONFactory;
+import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.search.Document;
+import com.liferay.portal.kernel.search.Indexer;
+import com.liferay.portal.kernel.search.IndexerRegistry;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.service.WorkflowDefinitionLinkLocalService;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
+import com.liferay.portal.kernel.test.util.HTTPTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
@@ -51,6 +59,7 @@ import com.liferay.portal.kernel.util.Base64;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -353,6 +362,7 @@ public class ProductResourceTest extends BaseProductResourceTestCase {
 		_testPostProductWithProductAccountGroupExternalReferenceCode();
 		_testPostProductWithProductChannelExternalReferenceCode();
 		_testPostProductWithWorkflowSingleApprover();
+		_testPostProductBatchWithAccountGroupIdsIndexesCorrectly();
 	}
 
 	@Override
@@ -616,6 +626,75 @@ public class ProductResourceTest extends BaseProductResourceTestCase {
 		return productResource.postProduct(randomProduct());
 	}
 
+	private void _testPostProductBatchWithAccountGroupIdsIndexesCorrectly()
+		throws Exception {
+
+		Product randomProduct = _randomProductWithSku();
+
+		Product postProduct = productResource.postProduct(randomProduct);
+
+		randomProduct.setProductAccountGroups(
+			new ProductAccountGroup[] {
+				new ProductAccountGroup() {
+					{
+						externalReferenceCode =
+							_accountGroup.getExternalReferenceCode();
+					}
+				}
+			});
+
+		_waitForFinish(
+			"COMPLETED", true,
+			HTTPTestUtil.invokeToJSONObject(
+				JSONUtil.put(
+					"items",
+					JSONUtil.put(
+						_jsonFactory.createJSONObject(
+							randomProduct.toString()))
+				).toString(),
+				"headless-commerce-admin-catalog/v1.0/products/batch",
+				Http.Method.POST));
+
+		Indexer<CPDefinition> indexer = _indexerRegistry.getIndexer(
+			CPDefinition.class);
+
+		Document document = indexer.getDocument(
+			_cpDefinitionLocalService.getCPDefinition(postProduct.getId()));
+
+		String accountGroupId = String.valueOf(
+			_accountGroup.getAccountGroupId());
+
+		Assert.assertEquals(
+			document.get("commerceAccountGroupIds"), accountGroupId);
+	}
+
+	private JSONObject _waitForFinish(
+		String expectedExecuteStatus, boolean importTask,
+		JSONObject jsonObject)
+		throws Exception {
+
+		String endpoint = StringBundler.concat(
+			"headless-batch-engine/v1.0/",
+			importTask ? "import-task" : "export-task",
+			"/by-external-reference-code/");
+
+		while (true) {
+			jsonObject = HTTPTestUtil.invokeToJSONObject(
+				null, endpoint + jsonObject.getString("externalReferenceCode"),
+				Http.Method.GET);
+
+			String executeStatus = jsonObject.getString("executeStatus");
+
+			if (StringUtil.equals(executeStatus, "COMPLETED") ||
+				StringUtil.equals(executeStatus, "FAILED")) {
+
+				Assert.assertEquals(expectedExecuteStatus, executeStatus);
+
+				return jsonObject;
+			}
+		}
+	}
+
 	private void _testPatchProductWithNegativeValue(String fieldName)
 		throws Exception {
 
@@ -828,6 +907,9 @@ public class ProductResourceTest extends BaseProductResourceTestCase {
 			cpInstance.getStatus(), WorkflowConstants.STATUS_APPROVED);
 	}
 
+	@Inject
+	private static IndexerRegistry _indexerRegistry;
+
 	@DeleteAfterTestRun
 	private AccountGroup _accountGroup;
 
@@ -848,6 +930,9 @@ public class ProductResourceTest extends BaseProductResourceTestCase {
 
 	@Inject
 	private CPDefinitionLocalService _cpDefinitionLocalService;
+
+	@Inject
+	private JSONFactory _jsonFactory;
 
 	@DeleteAfterTestRun
 	private CPOptionCategory _cpOptionCategory;
