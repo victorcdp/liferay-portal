@@ -6,11 +6,13 @@
 package com.liferay.commerce.product.service.impl;
 
 import com.liferay.commerce.product.constants.CPConfigurationEntrySettingConstants;
+import com.liferay.commerce.product.exception.RequiredCPConfigurationEntryException;
 import com.liferay.commerce.product.model.CPConfigurationEntry;
 import com.liferay.commerce.product.model.CPConfigurationEntrySetting;
 import com.liferay.commerce.product.model.CPConfigurationList;
 import com.liferay.commerce.product.model.CPDefinition;
 import com.liferay.commerce.product.service.CPConfigurationEntrySettingLocalService;
+import com.liferay.commerce.product.service.CPConfigurationListLocalService;
 import com.liferay.commerce.product.service.base.CPConfigurationEntryLocalServiceBaseImpl;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringBundler;
@@ -21,6 +23,7 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONSerializer;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.module.service.Snapshot;
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.search.Indexer;
@@ -191,6 +194,17 @@ public class CPConfigurationEntryLocalServiceImpl
 	public CPConfigurationEntry deleteCPConfigurationEntry(
 			CPConfigurationEntry cpConfigurationEntry)
 		throws PortalException {
+
+		CPConfigurationListLocalService cpConfigurationListLocalService =
+			_cpConfigurationListLocalServiceSnapshot.get();
+
+		CPConfigurationList cpConfigurationList =
+			cpConfigurationListLocalService.getCPConfigurationList(
+				cpConfigurationEntry.getCPConfigurationListId());
+
+		if (cpConfigurationList.isMaster()) {
+			throw new RequiredCPConfigurationEntryException();
+		}
 
 		CPConfigurationEntrySetting parentCPConfigurationEntrySetting =
 			_fetchCPConfigurationEntrySetting(cpConfigurationEntry);
@@ -433,6 +447,11 @@ public class CPConfigurationEntryLocalServiceImpl
 
 		indexer.reindex(CPDefinition.class.getName(), cpDefinitionId);
 	}
+
+	private static final Snapshot<CPConfigurationListLocalService>
+		_cpConfigurationListLocalServiceSnapshot = new Snapshot<>(
+			CPConfigurationEntryLocalServiceImpl.class,
+			CPConfigurationListLocalService.class);
 
 	@Reference
 	private ClassNameLocalService _classNameLocalService;
