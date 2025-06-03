@@ -198,7 +198,7 @@ public class CPConfigurationListDisplayContext {
 			getCPConfigurationEntryFDSActionDropdownItems()
 		throws PortalException {
 
-		return ListUtil.fromArray(
+		List<FDSActionDropdownItem> dropdownItems = ListUtil.fromArray(
 			new FDSActionDropdownItem(
 				PortletURLBuilder.create(
 					PortletProviderUtil.getPortletURL(
@@ -214,13 +214,19 @@ public class CPConfigurationListDisplayContext {
 					LiferayWindowState.POP_UP
 				).buildString(),
 				"pencil", "edit", LanguageUtil.get(httpServletRequest, "edit"),
-				"get", null, "sidePanel"),
-			new FDSActionDropdownItem(
-				"/o/headless-commerce-admin-catalog/v1.0" +
-					"/product-configurations/{id}",
-				"trash", "delete",
-				LanguageUtil.get(httpServletRequest, "delete"), "delete",
-				"delete", "async"));
+				"get", null, "sidePanel"));
+
+		if (!getCPConfigurationList().isMaster()) {
+			dropdownItems.add(
+				new FDSActionDropdownItem(
+					"/o/headless-commerce-admin-catalog/v1.0" +
+						"/product-configurations/{id}",
+					"trash", "delete",
+					LanguageUtil.get(httpServletRequest, "delete"), "delete",
+					"delete", "async"));
+		}
+
+		return dropdownItems;
 	}
 
 	public long getCPConfigurationEntryId() throws PortalException {
